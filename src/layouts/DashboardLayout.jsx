@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BarChart3, Bike, ClipboardList, LayoutDashboard, LogOut, Plus, ShieldCheck, Users } from 'lucide-react';
+import { BarChart3, Bike, Camera, ClipboardList, LayoutDashboard, LogOut, Plus, ShieldCheck, Users } from 'lucide-react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { hasPreviewAccess } from '../routes/ProtectedRoute';
 
@@ -10,6 +10,7 @@ const navigation = [
   { to: '/dashboard/roles', label: 'Roles', icon: ShieldCheck },
   { to: '/dashboard/accesos', label: 'Registros de acceso', icon: ClipboardList },
   { to: '/dashboard/registrar', label: 'Registrar entrada / salida', icon: Plus },
+  { to: '/dashboard/camara', label: 'Cámara en vivo', icon: Camera },
 ];
 
 export default function DashboardLayout() {

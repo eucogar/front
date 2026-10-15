@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Plus, RefreshCw, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Plus, RefreshCw, Search } from 'lucide-react';
 import { userService } from '../../services/userService';
 import { roleService } from '../../services/roleService';
 import { getApiError } from '../../api/axiosClient';
@@ -18,6 +18,8 @@ export default function UsersPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const isStudentRole = roles.find(role => String(role.rolId) === String(form.rol))?.rolNombre?.trim().toLowerCase() === 'estudiante';
@@ -44,13 +46,12 @@ export default function UsersPage() {
 
   useEffect(() => { loadUsers(); }, []);
   const filteredUsers = useMemo(() => users.filter(user => `${user.identificacion} ${user.nombres} ${user.apellidos} ${user.correo || ''}`.toLowerCase().includes(search.toLowerCase())), [users, search]);
+  const pageCount = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
+  const visibleUsers = filteredUsers.slice((page - 1) * pageSize, page * pageSize);
+  useEffect(() => { setPage(1); }, [search, pageSize]);
 
   const editUser = async (user) => {
     setError('');
-    if (!user.correo) {
-      setError('Esta persona no tiene una cuenta del aplicativo. El backend actual no permite editarla desde este formulario.');
-      return;
-    }
     if (hasPreviewAccess()) {
       setEditing(true);
       setForm({ ...emptyForm, ...user, correo: user.correo || '', rol: user.rolId, password: '' });
@@ -108,9 +109,10 @@ export default function UsersPage() {
       </form>}
       <div className="mb-4 flex gap-2"><div className="relative max-w-sm flex-1"><Search className="absolute left-3 top-3 h-4 w-4 text-slate-500" /><input className={`${fieldClass} pl-9`} placeholder="Buscar usuario" value={search} onChange={event => setSearch(event.target.value)} /></div><button className="rounded-xl border border-slate-700 px-3 text-slate-300" onClick={loadUsers} title="Actualizar"><RefreshCw size={17} /></button></div>
       <div className="overflow-x-auto rounded-2xl border border-slate-800"><table className="w-full min-w-[700px] text-left text-sm"><thead className="bg-slate-900 text-xs uppercase text-slate-400"><tr>{['Identificación', 'Nombre', 'Correo', 'Teléfono', 'Estado', ''].map(label => <th key={label} className="px-4 py-3">{label}</th>)}</tr></thead><tbody>
-        {loading ? <tr><td colSpan="6" className="p-6 text-center text-slate-400">Cargando usuarios…</td></tr> : filteredUsers.map(user => <tr key={user.identificacion} className="border-t border-slate-800"><td className="px-4 py-3">{user.identificacion}</td><td className="px-4 py-3">{user.nombres} {user.apellidos}</td><td className="px-4 py-3">{user.correo || 'Sin cuenta del aplicativo'}</td><td className="px-4 py-3">{user.telefono || '—'}</td><td className="px-4 py-3">{user.estado ? 'Activo' : 'Inactivo'}</td><td className="px-4 py-3"><button disabled={!user.correo} title={!user.correo ? 'Persona autorizada sin cuenta del aplicativo' : 'Editar usuario'} onClick={() => editUser(user)} className="text-emerald-400 hover:underline disabled:cursor-not-allowed disabled:text-slate-600 disabled:no-underline">Editar</button></td></tr>)}
+        {loading ? <tr><td colSpan="6" className="p-6 text-center text-slate-400">Cargando usuarios…</td></tr> : visibleUsers.map(user => <tr key={user.identificacion} className="border-t border-slate-800"><td className="px-4 py-3">{user.identificacion}</td><td className="px-4 py-3">{user.nombres} {user.apellidos}</td><td className="px-4 py-3">{user.correo || 'Sin cuenta del aplicativo'}</td><td className="px-4 py-3">{user.telefono || '—'}</td><td className="px-4 py-3">{user.estado ? 'Activo' : 'Inactivo'}</td><td className="px-4 py-3"><button title="Editar persona" onClick={() => editUser(user)} className="text-emerald-400 hover:underline">Editar</button></td></tr>)}
         {!loading && filteredUsers.length === 0 && <tr><td colSpan="6" className="p-6 text-center text-slate-500">No hay usuarios para mostrar.</td></tr>}
       </tbody></table></div>
+      {!loading && filteredUsers.length > 0 && <nav aria-label="Paginación de usuarios" className="flex flex-wrap items-center justify-between gap-3 border-x border-b border-slate-800 bg-slate-900 px-4 py-3"><span className="text-xs text-slate-400">Mostrando {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, filteredUsers.length)} de {filteredUsers.length} personas</span><div className="flex items-center gap-1"><label className="mr-2 text-xs text-slate-400">Filas<select className="ml-1 rounded border border-slate-700 bg-slate-950 px-1 py-1" value={pageSize} onChange={event => setPageSize(Number(event.target.value))}><option value={10}>10</option><option value={25}>25</option><option value={50}>50</option></select></label><button aria-label="Primera página" disabled={page === 1} onClick={() => setPage(1)} className="rounded p-1.5 text-slate-300 disabled:opacity-40"><ChevronsLeft size={16} /></button><button aria-label="Página anterior" disabled={page === 1} onClick={() => setPage(value => value - 1)} className="rounded p-1.5 text-slate-300 disabled:opacity-40"><ChevronLeft size={16} /></button><span className="px-2 text-xs text-slate-400">Página {page} de {pageCount}</span><button aria-label="Página siguiente" disabled={page === pageCount} onClick={() => setPage(value => value + 1)} className="rounded p-1.5 text-slate-300 disabled:opacity-40"><ChevronRight size={16} /></button><button aria-label="Última página" disabled={page === pageCount} onClick={() => setPage(pageCount)} className="rounded p-1.5 text-slate-300 disabled:opacity-40"><ChevronsRight size={16} /></button></div></nav>}
     </>
   );
 }

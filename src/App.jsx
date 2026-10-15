@@ -7,6 +7,7 @@ import UsersPage from './pages/users/UsersPage';
 import RolesPage from './pages/roles/RolesPage';
 import AccessHistoryPage from './pages/access/AccessHistoryPage';
 import RegisterAccessPage from './pages/access/RegisterAccessPage';
+import LiveCameraAccessPage from './pages/access/LiveCameraAccessPage';
 import AnalyticsPage from './pages/dashboard/AnalyticsPage';
 import AppErrorBoundary from './components/common/AppErrorBoundary';
 
@@ -31,6 +32,7 @@ function AppRoutes() {
         <Route path="roles" element={<RolesPage />} />
         <Route path="accesos" element={<AccessHistoryPage />} />
         <Route path="registrar" element={<RegisterAccessPage />} />
+        <Route path="camara" element={<LiveCameraAccessPage />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
       <Route path="*" element={<Navigate to={hasAccess ? '/dashboard' : '/login'} replace />} />
